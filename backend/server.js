@@ -3,6 +3,12 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/authRoutes");
+const skillRoutes = require("./routes/skillRoutes");
+const dsaRoutes = require("./routes/dsaRoutes");
+const projectRoutes = require('./routes/projectRoutes');
+const certificationRoutes = require('./routes/certificationRoutes');
+const placementRoutes = require("./routes/placementRoutes");
+
 
 const app = express();
 
@@ -10,6 +16,11 @@ const app = express();
 app.use(express.json());
 
 app.use("/api/auth",authRoutes);
+app.use("/api/skills",skillRoutes);
+app.use("/api/dsa", dsaRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/certifications', certificationRoutes);
+app.use("/api/placements", placementRoutes);
 
 // Connect to MongoDB
 mongoose
