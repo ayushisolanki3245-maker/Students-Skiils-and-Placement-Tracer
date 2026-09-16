@@ -8,7 +8,7 @@ const dsaRoutes = require("./routes/dsaRoutes");
 const projectRoutes = require('./routes/projectRoutes');
 const certificationRoutes = require('./routes/certificationRoutes');
 const placementRoutes = require("./routes/placementRoutes");
-
+const profileRoutes = require("./routes/profileRoutes");
 
 const app = express();
 
@@ -21,6 +21,7 @@ app.use("/api/dsa", dsaRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/certifications', certificationRoutes);
 app.use("/api/placements", placementRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Connect to MongoDB
 mongoose

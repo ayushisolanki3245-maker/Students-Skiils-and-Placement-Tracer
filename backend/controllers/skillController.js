@@ -2,7 +2,7 @@
 const Skill = require('../models/Skill');
 
 // GET /api/skills
-getSkills = async (req, res) => {
+const getSkills = async (req, res) => {
   try {
     const skills = await Skill.find({ userId: req.userId });
     res.json(skills);
@@ -12,7 +12,7 @@ getSkills = async (req, res) => {
 };
 
 // POST /api/skills
-createSkill = async (req, res) => {
+const createSkill = async (req, res) => {
   try {
     const { name, category, level } = req.body;
     const skill = await Skill.create({ userId: req.userId, name, category, level });
@@ -22,8 +22,24 @@ createSkill = async (req, res) => {
   }
 };
 
+// PUT /api/skills/:id
+const updateSkill = async (req, res) => {
+  try {
+    const { name, category, level } = req.body;
+    const skill = await Skill.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
+      { name, category, level },
+      { new: true, runValidators: true }
+    );
+    if (!skill) return res.status(404).json({ message: 'Skill not found' });
+    res.json(skill);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
 // DELETE /api/skills/:id
-deleteSkill = async (req, res) => {
+const deleteSkill = async (req, res) => {
   try {
     const result = await Skill.deleteOne({ _id: req.params.id, userId: req.userId });
     if (result.deletedCount === 0) {
@@ -35,5 +51,4 @@ deleteSkill = async (req, res) => {
   }
 };
 
-
-module.exports = {getSkills, createSkill, deleteSkill};
+module.exports = { getSkills, createSkill, updateSkill, deleteSkill };

@@ -21,6 +21,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    profile: {
+      college: { type: String },
+      rollNumber: { type: String },
+      course: {
+        type: String,
+        enum: ["BCA", "B.Tech", "MCA", "M.Tech"],
+      },
+      semester: { type: Number },
+      cgpa: { type: Number },
+      backlogs: { type: Number },
+      graduationYear: { type: Number },
+    },
   },
   {
     timestamps: true,

@@ -36,4 +36,16 @@ const updateTopic = async (req, res) => {
   }
 };
 
-module.exports = { getTopics, createTopic, updateTopic };
+const deleteTopic = async (req, res) => {
+  try {
+    const result = await DSATopic.deleteOne({ _id: req.params.id, userId: req.userId });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Topic not found' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { getTopics, createTopic, updateTopic, deleteTopic };
