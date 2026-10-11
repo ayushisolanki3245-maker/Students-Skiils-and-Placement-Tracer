@@ -9,6 +9,8 @@ const projectRoutes = require('./routes/projectRoutes');
 const certificationRoutes = require('./routes/certificationRoutes');
 const placementRoutes = require("./routes/placementRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const jobRoutes = require("./routes/jobRoutes");
+const redinessRoutes = require("./routes/readinessRoutes");
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/certifications', certificationRoutes);
 app.use("/api/placements", placementRoutes);
 app.use("/api/profile", profileRoutes);
+app.use('/api/jobs', jobRoutes);
+app.use('/api/readiness', redinessRoutes );
 
 // Connect to MongoDB
 mongoose

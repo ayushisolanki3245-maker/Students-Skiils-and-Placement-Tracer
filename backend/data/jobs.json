@@ -1,0 +1,17 @@
+[
+  { "title": "Software Developer", "company": "TechCorp", "package": "8 LPA", "requiredSkills": ["javascript", "react", "node", "express", "mongodb"], "categoryWeights": { "dsa": 40, "mern": 35, "fundamentals": 15, "communication": 10 } },
+  { "title": "Frontend Developer", "company": "PixelWorks", "package": "6 LPA", "requiredSkills": ["html", "css", "javascript", "react", "tailwind"], "categoryWeights": { "dsa": 15, "mern": 55, "fundamentals": 15, "communication": 15 } },
+  { "title": "Backend Developer", "company": "DataStack", "package": "7 LPA", "requiredSkills": ["node", "express", "mongodb", "sql", "rest api"], "categoryWeights": { "dsa": 30, "mern": 40, "fundamentals": 20, "communication": 10 } },
+  { "title": "Full Stack Developer", "company": "StackLabs", "package": "9 LPA", "requiredSkills": ["html", "css", "javascript", "react", "node", "express", "mongodb"], "categoryWeights": { "dsa": 25, "mern": 50, "fundamentals": 15, "communication": 10 } },
+  { "title": "Java Developer", "company": "InfoBridge", "package": "5 LPA", "requiredSkills": ["java", "spring boot", "sql", "rest api", "oop"], "categoryWeights": { "dsa": 35, "mern": 10, "fundamentals": 45, "communication": 10 } },
+  { "title": "Python Developer", "company": "CodeNest", "package": "6 LPA", "requiredSkills": ["python", "django", "sql", "rest api", "git"], "categoryWeights": { "dsa": 30, "mern": 15, "fundamentals": 45, "communication": 10 } },
+  { "title": "Data Analyst", "company": "InsightIQ", "package": "6 LPA", "requiredSkills": ["python", "sql", "excel", "pandas", "statistics"], "categoryWeights": { "dsa": 20, "mern": 10, "fundamentals": 50, "communication": 20 } },
+  { "title": "QA Engineer", "company": "TestWave", "package": "4 LPA", "requiredSkills": ["manual testing", "selenium", "sql", "java", "git"], "categoryWeights": { "dsa": 15, "mern": 5, "fundamentals": 60, "communication": 20 } },
+  { "title": "DevOps Engineer", "company": "CloudOps", "package": "8 LPA", "requiredSkills": ["linux", "docker", "git", "aws", "ci/cd"], "categoryWeights": { "dsa": 20, "mern": 10, "fundamentals": 60, "communication": 10 } },
+  { "title": "React Developer", "company": "UIForge", "package": "7 LPA", "requiredSkills": ["javascript", "react", "redux", "html", "css", "git"], "categoryWeights": { "dsa": 20, "mern": 55, "fundamentals": 15, "communication": 10 } },
+  { "title": "Node.js Developer", "company": "ServeLogic", "package": "7 LPA", "requiredSkills": ["javascript", "node", "express", "mongodb", "rest api", "git"], "categoryWeights": { "dsa": 25, "mern": 50, "fundamentals": 15, "communication": 10 } },
+  { "title": "Software Engineer Trainee", "company": "GlobalServe", "package": "3.5 LPA", "requiredSkills": ["c++", "oop", "dbms", "os", "sql"], "categoryWeights": { "dsa": 40, "mern": 5, "fundamentals": 45, "communication": 10 } },
+  { "title": "Mobile App Developer", "company": "AppSpark", "package": "6 LPA", "requiredSkills": ["javascript", "react native", "rest api", "git", "firebase"], "categoryWeights": { "dsa": 25, "mern": 40, "fundamentals": 20, "communication": 15 } },
+  { "title": "Cloud Support Associate", "company": "SkyDesk", "package": "5 LPA", "requiredSkills": ["linux", "networking", "aws", "sql", "python"], "categoryWeights": { "dsa": 15, "mern": 5, "fundamentals": 65, "communication": 15 } },
+  { "title": "Associate Engineer", "company": "ProductHub", "package": "10 LPA", "requiredSkills": ["java", "python", "dbms", "os", "oop"], "categoryWeights": { "dsa": 45, "mern": 5, "fundamentals": 40, "communication": 10 } }
+]
