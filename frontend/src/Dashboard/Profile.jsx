@@ -1,12 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "../api";
 
 const Profile = () => {
 
   const [profile, setProfile] = useState({
     name: "",
     email: "",
-    phone: "",
     college: "",
     rollNumber: "",
     course: "BCA",
@@ -15,6 +15,12 @@ const Profile = () => {
     backlogs: "",
     graduationYear: "2027",
   });
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  useEffect(() => {
+    apiRequest("/api/profile").then((data) => setProfile((current) => ({ ...current, name: data.username || "", email: data.email || "", ...(data.profile || {}), semester: data.profile?.semester ?? "", cgpa: data.profile?.cgpa ?? "", backlogs: data.profile?.backlogs ?? "", graduationYear: data.profile?.graduationYear ?? current.graduationYear }))).catch((e) => setError(e.message));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,12 +31,22 @@ const Profile = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Profile Data:", profile);
-
-    alert("Profile saved successfully!");
+    setError(""); setNotice(""); setIsSaving(true);
+    try {
+      await apiRequest("/api/profile", { method: "PUT", body: {
+        college: profile.college,
+        rollNumber: profile.rollNumber,
+        course: profile.course,
+        semester: profile.semester === "" ? null : Number(profile.semester),
+        cgpa: profile.cgpa === "" ? null : Number(profile.cgpa),
+        backlogs: profile.backlogs === "" ? null : Number(profile.backlogs),
+        graduationYear: profile.graduationYear === "" ? null : Number(profile.graduationYear),
+      } });
+      setNotice("Profile saved successfully.");
+    } catch (requestError) { setError(requestError.message); }
+    finally { setIsSaving(false); }
   };
 
   return (
@@ -56,6 +72,8 @@ const Profile = () => {
 
       {/* Profile Card */}
       <div className="max-w-5xl mx-auto">
+
+        {(error || notice) && <p role={error ? "alert" : "status"} className={`mb-5 text-sm ${error ? "text-red-300" : "text-emerald-300"}`}>{error || notice}</p>}
 
         <form
           onSubmit={handleSubmit}
@@ -89,8 +107,8 @@ const Profile = () => {
                   type="text"
                   name="name"
                   value={profile.name}
-                  onChange={handleChange}
-                  placeholder="Enter your name"
+                  readOnly
+                  placeholder="Set during signup"
                   className="w-full bg-[#080C18] border border-[#1E2A45] rounded-lg px-4 py-3 text-white outline-none focus:border-[#6366F1]"
                 />
               </div>
@@ -107,29 +125,11 @@ const Profile = () => {
                   type="email"
                   name="email"
                   value={profile.email}
-                  onChange={handleChange}
-                  placeholder="example@gmail.com"
+                  readOnly
                   className="w-full bg-[#080C18] border border-[#1E2A45] rounded-lg px-4 py-3 text-white outline-none focus:border-[#6366F1]"
                 />
               </div>
 
-
-              {/* Phone */}
-
-              <div>
-                <label className="block text-sm text-[#94A3B8] mb-2">
-                  Phone Number
-                </label>
-
-                <input
-                  type="tel"
-                  name="phone"
-                  value={profile.phone}
-                  onChange={handleChange}
-                  placeholder="Enter phone number"
-                  className="w-full bg-[#080C18] border border-[#1E2A45] rounded-lg px-4 py-3 text-white outline-none focus:border-[#6366F1]"
-                />
-              </div>
 
 
               {/* Roll Number */}
@@ -327,9 +327,10 @@ const Profile = () => {
 
             <button
               type="submit"
+              disabled={isSaving}
               className="px-6 py-3 rounded-lg bg-linear-to-r from-indigo-500 to-indigo-400 text-white font-medium hover:opacity-90 transition"
             >
-              Save Profile
+              {isSaving ? "Saving…" : "Save Profile"}
             </button>
 
           </div>

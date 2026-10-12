@@ -1,40 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "../api";
 
 const PlacementTracker = () => {
-  const [companies, setCompanies] = useState([
-    {
-      id: 1,
-      company: "Google",
-      role: "Software Engineer Intern",
-      package: "₹80,000/month",
-      status: "Shortlisted",
-      eligible: true,
-    },
-    {
-      id: 2,
-      company: "Infosys",
-      role: "Systems Engineer",
-      package: "3.6 LPA",
-      status: "Applied",
-      eligible: true,
-    },
-    {
-      id: 3,
-      company: "Wipro",
-      role: "Project Engineer",
-      package: "3.5 LPA",
-      status: "Applied",
-      eligible: true,
-    },
-    {
-      id: 4,
-      company: "Goldman Sachs",
-      role: "Technology Analyst",
-      package: "18 LPA",
-      status: "Not Applied",
-      eligible: false,
-    },
-  ]);
+  const [companies, setCompanies] = useState([]);
+  const [error, setError] = useState("");
+  useEffect(() => { apiRequest("/api/placements").then(setCompanies).catch((e) => setError(e.message)); }, []);
 
   const [showForm, setShowForm] = useState(false);
 
@@ -42,7 +12,6 @@ const PlacementTracker = () => {
     company: "",
     role: "",
     package: "",
-    status: "Not Applied",
     eligible: "Yes",
   });
 
@@ -53,41 +22,35 @@ const PlacementTracker = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newCompany = {
-      id: Date.now(),
-      company: formData.company,
-      role: formData.role,
-      package: formData.package,
-      status: formData.status,
-      eligible: formData.eligible === "Yes",
-    };
-
-    setCompanies([...companies, newCompany]);
+    try {
+      setError("");
+      const created = await apiRequest("/api/placements", { method: "POST", body: { company: formData.company, role: formData.role, package: Number(formData.package), eligible: formData.eligible === "Yes" } });
+      setCompanies((items) => [...items, created]);
+    } catch (requestError) { setError(requestError.message); return; }
 
     setFormData({
       company: "",
       role: "",
       package: "",
-      status: "Not Applied",
       eligible: "Yes",
     });
 
     setShowForm(false);
   };
 
-  const updateStatus = (id, newStatus) => {
-    setCompanies(
-      companies.map((company) =>
-        company.id === id ? { ...company, status: newStatus } : company,
-      ),
-    );
+  const updateStatus = async (id, newStatus) => {
+    try {
+      const updated = await apiRequest(`/api/placements/${id}`, { method: "PUT", body: { status: newStatus } });
+      setCompanies((items) => items.map((company) => company._id === id ? updated : company));
+    } catch (requestError) { setError(requestError.message); }
   };
 
-  const deleteCompany = (id) => {
-    setCompanies(companies.filter((company) => company.id !== id));
+  const deleteCompany = async (id) => {
+    try { await apiRequest(`/api/placements/${id}`, { method: "DELETE" }); setCompanies((items) => items.filter((company) => company._id !== id)); }
+    catch (requestError) { setError(requestError.message); }
   };
 
   const getStatusStyle = (status) => {
@@ -161,6 +124,8 @@ const PlacementTracker = () => {
           </button>
         </div>
 
+        {error && <p role="alert" className="mb-5 text-sm text-red-300">{error}</p>}
+
         {/* STAT CARDS */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
           <StatCard number={totalDrives} title="Total Drives" />
@@ -219,38 +184,20 @@ const PlacementTracker = () => {
               {/* PACKAGE */}
               <div>
                 <label className="block text-sm text-[#94A3B8] mb-2">
-                  Package
+                  Package (LPA)
                 </label>
 
                 <input
-                  type="text"
+                  type="number"
                   name="package"
                   value={formData.package}
                   onChange={handleChange}
-                  placeholder="6 LPA"
+                  placeholder="6"
+                  min="0"
+                  step="0.01"
                   required
                   className="w-full px-4 py-3 rounded-lg bg-[#151D35] border border-[#1E2A45] outline-none focus:border-indigo-500"
                 />
-              </div>
-
-              {/* STATUS */}
-              <div>
-                <label className="block text-sm text-[#94A3B8] mb-2">
-                  Status
-                </label>
-
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-[#151D35] border border-[#1E2A45] outline-none focus:border-indigo-500"
-                >
-                  <option>Not Applied</option>
-                  <option>Applied</option>
-                  <option>Shortlisted</option>
-                  <option>Placed</option>
-                  <option>Rejected</option>
-                </select>
               </div>
 
               {/* ELIGIBILITY */}
@@ -295,7 +242,7 @@ const PlacementTracker = () => {
         <div className="space-y-4">
           {companies.map((company) => (
             <div
-              key={company.id}
+              key={company._id}
               className="bg-[#0F1526] border border-[#1E2A45] rounded-xl p-5 hover:border-indigo-500/30 transition"
             >
               <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -310,7 +257,7 @@ const PlacementTracker = () => {
 
                   <p className="text-sm text-[#64748B] mt-1">
                     {company.role}
-                    {company.package && ` · ${company.package}`}
+                    {company.package != null && ` · ${company.package} LPA`}
                   </p>
                 </div>
 
@@ -330,7 +277,7 @@ const PlacementTracker = () => {
                 {/* STATUS */}
                 <select
                   value={company.status}
-                  onChange={(e) => updateStatus(company.id, e.target.value)}
+                  onChange={(e) => updateStatus(company._id, e.target.value)}
                   className={`text-xs px-3 py-2 rounded-lg border outline-none bg-[#151D35] ${getStatusStyle(
                     company.status,
                   )}`}
@@ -344,7 +291,7 @@ const PlacementTracker = () => {
 
                 {/* DELETE */}
                 <button
-                  onClick={() => deleteCompany(company.id)}
+                  onClick={() => deleteCompany(company._id)}
                   className="text-xs text-[#64748B] hover:text-red-400 transition"
                 >
                   Delete

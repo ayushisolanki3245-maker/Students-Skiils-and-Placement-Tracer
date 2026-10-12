@@ -1,75 +1,38 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "../api";
 
 const DsaTracker = () => {
-  const [topics, setTopics] = useState([
-    {
-      id: 1,
-      name: "Arrays",
-      easy: 20,
-      medium: 12,
-      hard: 4,
-    },
-    {
-      id: 2,
-      name: "Strings",
-      easy: 15,
-      medium: 8,
-      hard: 2,
-    },
-    {
-      id: 3,
-      name: "Linked List",
-      easy: 10,
-      medium: 7,
-      hard: 2,
-    },
-    {
-      id: 4,
-      name: "Trees",
-      easy: 8,
-      medium: 6,
-      hard: 3,
-    },
-    {
-      id: 5,
-      name: "Graphs",
-      easy: 5,
-      medium: 4,
-      hard: 2,
-    },
-    {
-      id: 6,
-      name: "Dynamic Programming",
-      easy: 4,
-      medium: 5,
-      hard: 3,
-    },
-  ]);
+  const [topics, setTopics] = useState([]);
+  const [error, setError] = useState("");
+  useEffect(() => { apiRequest("/api/dsa").then(setTopics).catch((e) => setError(e.message)); }, []);
 
-  const [topic, setTopic] = useState("Arrays");
+  const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("easy");
   const [count, setCount] = useState(1);
 
-  const addProblems = (e) => {
+  const addProblems = async (e) => {
     e.preventDefault();
 
     const amount = Number(count);
 
     if (!amount || amount < 1) return;
 
-    setTopics((prevTopics) =>
-      prevTopics.map((item) =>
-        item.name === topic
-          ? {
-              ...item,
-              [difficulty]: item[difficulty] + amount,
-            }
-          : item
-      )
-    );
+    try {
+      setError("");
+      const existing = topics.find((item) => item.name.toLowerCase() === topic.trim().toLowerCase());
+      const updated = existing
+        ? await apiRequest(`/api/dsa/${existing._id}`, { method: "PUT", body: { easy: difficulty === "easy" ? amount : 0, medium: difficulty === "medium" ? amount : 0, hard: difficulty === "hard" ? amount : 0 } })
+        : await apiRequest("/api/dsa", { method: "POST", body: { name: topic.trim(), easy: difficulty === "easy" ? amount : 0, medium: difficulty === "medium" ? amount : 0, hard: difficulty === "hard" ? amount : 0 } });
+      setTopics((items) => existing ? items.map((item) => item._id === updated._id ? updated : item) : [...items, updated]);
+      setTopic("");
+      setCount(1);
+    } catch (requestError) { setError(requestError.message); }
+  };
 
-    setCount(1);
+  const deleteTopic = async (id) => {
+    try { await apiRequest(`/api/dsa/${id}`, { method: "DELETE" }); setTopics((items) => items.filter((item) => item._id !== id)); }
+    catch (requestError) { setError(requestError.message); }
   };
 
   const totalEasy = topics.reduce((sum, topic) => sum + topic.easy, 0);
@@ -99,6 +62,8 @@ const DsaTracker = () => {
           </p>
 
         </div>
+
+        {error && <p role="alert" className="mb-5 text-sm text-red-300">{error}</p>}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -147,17 +112,14 @@ const DsaTracker = () => {
                   Topic
                 </label>
 
-                <select
+                <input
+                  type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
+                  placeholder="e.g. Arrays"
+                  required
                   className="w-full mt-2 px-4 py-3 rounded-lg bg-[#151D35] border border-[#1E2A45] outline-none text-sm"
-                >
-                  {topics.map((item) => (
-                    <option key={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
+                />
 
               </div>
 
@@ -240,7 +202,7 @@ const DsaTracker = () => {
 
               return (
                 <div
-                  key={item.id}
+                  key={item._id}
                   className="p-5 rounded-xl bg-[#151D35] border border-[#1E2A45]"
                 >
 
@@ -250,6 +212,7 @@ const DsaTracker = () => {
                     <h3 className="font-semibold">
                       {item.name}
                     </h3>
+                    <button onClick={() => deleteTopic(item._id)} className="text-xs text-[#64748B] hover:text-red-400">Delete topic</button>
 
                     <span className="font-mono text-sm text-[#94A3B8]">
                       {total} solved

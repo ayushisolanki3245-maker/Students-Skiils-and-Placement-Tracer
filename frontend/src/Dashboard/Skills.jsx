@@ -1,53 +1,39 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "../api";
 
 const Skills = () => {
-  const [skills, setSkills] = useState([
-    {
-      id: 1,
-      name: "React.js",
-      category: "Frontend",
-      level: "Advanced",
-    },
-    {
-      id: 2,
-      name: "Java",
-      category: "Programming",
-      level: "Intermediate",
-    },
-    {
-      id: 3,
-      name: "MySQL",
-      category: "Database",
-      level: "Intermediate",
-    },
-  ]);
+  const [skills, setSkills] = useState([]);
+  const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  useEffect(() => { apiRequest("/api/skills").then(setSkills).catch((e) => setError(e.message)); }, []);
 
   const [skillName, setSkillName] = useState("");
   const [category, setCategory] = useState("Frontend");
   const [level, setLevel] = useState("Beginner");
 
-  const addSkill = (e) => {
+  const addSkill = async (e) => {
     e.preventDefault();
-
     if (!skillName.trim()) return;
-
-    const newSkill = {
-      id: Date.now(),
-      name: skillName,
-      category,
-      level,
-    };
-
-    setSkills([...skills, newSkill]);
-
+    try {
+      setError("");
+      if (editingId) {
+        const updated = await apiRequest(`/api/skills/${editingId}`, { method: "PUT", body: { name: skillName.trim(), category, level } });
+        setSkills((items) => items.map((item) => item._id === editingId ? updated : item));
+      } else {
+        const created = await apiRequest("/api/skills", { method: "POST", body: { name: skillName.trim(), category, level } });
+        setSkills((items) => [...items, created]);
+      }
+      setEditingId(null);
     setSkillName("");
     setCategory("Frontend");
     setLevel("Beginner");
+    } catch (e) { setError(e.message); }
   };
 
-  const deleteSkill = (id) => {
-    setSkills(skills.filter((skill) => skill.id !== id));
+  const deleteSkill = async (id) => {
+    try { await apiRequest(`/api/skills/${id}`, { method: "DELETE" }); setSkills((items) => items.filter((skill) => skill._id !== id)); }
+    catch (e) { setError(e.message); }
   };
 
   const getLevelWidth = (level) => {
@@ -76,6 +62,8 @@ const Skills = () => {
             levels.
           </p>
         </div>
+
+        {error && <p role="alert" className="mb-5 text-sm text-red-300">{error}</p>}
 
         {/* Add Skill + Summary */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
@@ -150,7 +138,7 @@ const Skills = () => {
                 type="submit"
                 className="mt-5 px-5 py-3 rounded-lg bg-linear-to-r from-[#6366F1] to-[#818CF8] text-sm font-semibold hover:opacity-90 transition"
               >
-                + Add Skill
+                {editingId ? "Save Skill" : "+ Add Skill"}
               </button>
 
             </form>
@@ -226,7 +214,7 @@ const Skills = () => {
             {skills.map((skill) => (
 
               <div
-                key={skill.id}
+                key={skill._id}
                 className="p-5 rounded-xl bg-[#151D35] border border-[#1E2A45] hover:border-[#6366F1]/40 transition"
               >
 
@@ -242,12 +230,12 @@ const Skills = () => {
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => deleteSkill(skill.id)}
+                  <div className="flex gap-3"><button onClick={() => { setEditingId(skill._id); setSkillName(skill.name); setCategory(skill.category); setLevel(skill.level); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="text-xs text-[#818CF8]">Edit</button><button
+                    onClick={() => deleteSkill(skill._id)}
                     className="text-xs text-[#64748B] hover:text-[#F87171]"
                   >
                     Delete
-                  </button>
+                  </button></div>
 
                 </div>
 

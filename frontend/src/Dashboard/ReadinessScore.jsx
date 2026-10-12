@@ -1,297 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "../api";
 
 const ReadinessScore = () => {
-  const scores = [
-    {
-      title: "Academics",
-      score: 24,
-      total: 30,
-      percentage: 80,
-      color: "#6366F1",
-    },
-    {
-      title: "DSA Depth",
-      score: 18,
-      total: 25,
-      percentage: 72,
-      color: "#10B981",
-    },
-    {
-      title: "Projects",
-      score: 14,
-      total: 20,
-      percentage: 70,
-      color: "#F59E0B",
-    },
-    {
-      title: "Core Skills",
-      score: 10,
-      total: 15,
-      percentage: 67,
-      color: "#F87171",
-    },
-    {
-      title: "Certifications",
-      score: 6,
-      total: 10,
-      percentage: 60,
-      color: "#A78BFA",
-    },
+  const [readiness, setReadiness] = useState(null);
+  const [error, setError] = useState("");
+  useEffect(() => { apiRequest("/api/readiness").then(setReadiness).catch((e) => setError(e.message)); }, []);
+
+  const breakdown = readiness?.breakdown || {};
+  const progress = readiness?.categoryProgress || {};
+  const parts = [
+    ["CGPA", breakdown.cgpa, 20, "#6366F1"],
+    ["DSA", breakdown.dsa, 25, "#10B981"],
+    ["MERN skills", breakdown.mern, 20, "#F59E0B"],
+    ["Fundamentals", breakdown.fundamentals, 10, "#F87171"],
+    ["Communication", breakdown.communication, 5, "#A78BFA"],
+    ["Projects", breakdown.projects, 15, "#38BDF8"],
+    ["Certifications", breakdown.certs, 5, "#EC4899"],
   ];
 
-  return (
-    <div className="min-h-screen bg-[#080C18] text-white px-6 py-10">
-      {/* Header */}
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-10">
-          <span className="font-mono text-xs text-[#10B981] uppercase tracking-widest">
-            Readiness
-          </span>
-
-          <h1 className="text-4xl font-bold mt-2">Your Placement Readiness</h1>
-
-          <p className="text-[#64748B] mt-2">
-            Understand where you stand and what you should improve before your
-            next placement drive.
-          </p>
-        </div>
-
-        {/* Main Score */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {/* Score Card */}
-          <div
-            className="lg:col-span-1 rounded-2xl border p-8 flex flex-col items-center justify-center"
-            style={{
-              background: "#0F1526",
-              borderColor: "rgba(99,102,241,0.2)",
-            }}
-          >
-            <span className="font-mono text-xs text-[#64748B] uppercase tracking-widest">
-              Overall Score
-            </span>
-
-            {/* Circle */}
-            <div className="relative flex items-center justify-center my-6">
-              <svg width="190" height="190" viewBox="0 0 190 190">
-                <circle
-                  cx="95"
-                  cy="95"
-                  r="72"
-                  fill="none"
-                  stroke="rgba(99,102,241,0.12)"
-                  strokeWidth="14"
-                />
-
-                <circle
-                  cx="95"
-                  cy="95"
-                  r="72"
-                  fill="none"
-                  stroke="url(#scoreGradient)"
-                  strokeWidth="14"
-                  strokeLinecap="round"
-                  strokeDasharray="325 452"
-                  transform="rotate(-90 95 95)"
-                />
-
-                <defs>
-                  <linearGradient
-                    id="scoreGradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stopColor="#6366F1" />
-                    <stop offset="100%" stopColor="#10B981" />
-                  </linearGradient>
-                </defs>
-              </svg>
-
-              <div className="absolute text-center">
-                <div className="font-mono text-5xl font-bold">72</div>
-
-                <div className="font-mono text-xs text-[#64748B]">/ 100</div>
-              </div>
-            </div>
-
-            <div className="text-[#10B981] font-semibold">Good Progress</div>
-
-            <p className="text-xs text-[#64748B] text-center mt-2">
-              You are on track for most placement drives.
-            </p>
-          </div>
-
-          {/* Score Breakdown */}
-          <div
-            className="lg:col-span-2 rounded-2xl border p-6"
-            style={{
-              background: "#0F1526",
-              borderColor: "rgba(99,102,241,0.15)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold">Score Breakdown</h2>
-
-                <p className="text-xs text-[#64748B] mt-1">
-                  Your score across five placement dimensions
-                </p>
-              </div>
-
-              <span className="font-mono text-xs text-[#64748B]">Live</span>
-            </div>
-
-            <div className="space-y-5">
-              {scores.map((item) => (
-                <div key={item.title}>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-[#94A3B8]">{item.title}</span>
-
-                    <span
-                      className="font-mono text-xs"
-                      style={{ color: item.color }}
-                    >
-                      {item.score}/{item.total}
-                    </span>
-                  </div>
-
-                  <div className="h-2 rounded-full bg-[#151D35] overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${item.percentage}%`,
-                        background: item.color,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Improvement Section */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Strengths */}
-          <div
-            className="rounded-2xl border p-6"
-            style={{
-              background: "#0F1526",
-              borderColor: "rgba(16,185,129,0.15)",
-            }}
-          >
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-[#10B981]">
-                ✓
-              </div>
-
-              <div>
-                <h2 className="font-semibold">Your Strengths</h2>
-
-                <p className="text-xs text-[#64748B]">
-                  Areas where you're doing well
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-[#151D35]">
-                <div className="flex justify-between">
-                  <span className="text-sm">Academics</span>
-
-                  <span className="text-xs text-[#10B981]">80%</span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-[#151D35]">
-                <div className="flex justify-between">
-                  <span className="text-sm">DSA</span>
-
-                  <span className="text-xs text-[#10B981]">72%</span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-[#151D35]">
-                <div className="flex justify-between">
-                  <span className="text-sm">Projects</span>
-
-                  <span className="text-xs text-[#10B981]">70%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Improvements */}
-          <div
-            className="rounded-2xl border p-6"
-            style={{
-              background: "#0F1526",
-              borderColor: "rgba(245,158,11,0.15)",
-            }}
-          >
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-[#F59E0B]">
-                !
-              </div>
-
-              <div>
-                <h2 className="font-semibold">Needs Improvement</h2>
-
-                <p className="text-xs text-[#64748B]">
-                  Focus on these areas next
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg bg-[#151D35]">
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm">Certifications</span>
-
-                  <span className="text-xs text-[#F59E0B]">60%</span>
-                </div>
-
-                <p className="text-xs text-[#64748B]">
-                  Add relevant certifications to improve your profile.
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-[#151D35]">
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm">Core Skills</span>
-
-                  <span className="text-xs text-[#F59E0B]">67%</span>
-                </div>
-
-                <p className="text-xs text-[#64748B]">
-                  Strengthen your technical and communication skills.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Formula */}
-        <div
-          className="mt-6 rounded-xl border p-5"
-          style={{
-            background: "rgba(99,102,241,0.05)",
-            borderColor: "rgba(99,102,241,0.15)",
-          }}
-        >
-          <span className="font-mono text-xs text-[#64748B]">
-            Score Formula
-          </span>
-
-          <p className="font-mono text-xs text-[#818CF8] mt-2 leading-relaxed">
-            score = (academics × 0.30) + (dsa × 0.25) + (projects × 0.20) +
-            (skills × 0.15) + (certifications × 0.10) − backlog penalty
-          </p>
-        </div>
+  return <div className="min-h-screen bg-[#080C18] text-white px-6 py-10"><div className="max-w-6xl mx-auto">
+    <div className="mb-10"><span className="font-mono text-xs text-[#10B981] uppercase tracking-widest">Readiness</span><h1 className="text-4xl font-bold mt-2">Your Placement Readiness</h1><p className="text-[#64748B] mt-2">Your current preparation score and progress by category.</p></div>
+    {error && <p role="alert" className="mb-5 text-sm text-red-300">{error}</p>}
+    {!readiness && !error && <p className="text-[#94A3B8]">Loading readiness…</p>}
+    {readiness && <>
+      <div className="grid lg:grid-cols-3 gap-6 mb-8">
+        <section className="rounded-2xl border border-indigo-500/20 p-8 bg-[#0F1526] flex flex-col items-center justify-center"><span className="font-mono text-xs text-[#64748B] uppercase tracking-widest">Overall Score</span><div className="my-6 text-center"><div className="font-mono text-6xl font-bold">{readiness.score}</div><div className="font-mono text-xs text-[#64748B]">/ 100</div></div><div className="text-[#10B981] font-semibold">{readiness.label}</div></section>
+        <section className="lg:col-span-2 rounded-2xl border border-indigo-500/15 p-6 bg-[#0F1526]"><h2 className="text-lg font-semibold mb-6">Score Breakdown</h2><div className="space-y-4">{parts.map(([title, score = 0, max, color]) => <div key={title}><div className="flex justify-between mb-2"><span className="text-sm text-[#94A3B8]">{title}</span><span className="font-mono text-xs" style={{ color }}>{score}/{max}</span></div><div className="h-2 rounded-full bg-[#151D35] overflow-hidden"><div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, score / max * 100))}%`, background: color }} /></div></div>)}{breakdown.backlogPenalty < 0 && <p className="text-xs text-red-300">Backlog penalty: {breakdown.backlogPenalty} points</p>}</div></section>
       </div>
-    </div>
-  );
+      <section className="rounded-2xl border border-[#1E2A45] p-6 bg-[#0F1526]"><h2 className="text-lg font-semibold mb-1">Preparation Progress</h2><p className="text-xs text-[#64748B] mb-6">Category progress returned by the readiness service.</p><div className="grid md:grid-cols-2 gap-5">{[["DSA", progress.dsa], ["MERN", progress.mern], ["Fundamentals", progress.fundamentals], ["Communication", progress.communication]].map(([name, value = 0]) => <div key={name}><div className="flex justify-between mb-2 text-sm"><span>{name}</span><span className="text-[#818CF8]">{value}%</span></div><div className="h-2 rounded-full bg-[#151D35] overflow-hidden"><div className="h-full bg-indigo-500 rounded-full" style={{ width: `${value}%` }} /></div></div>)}</div></section>
+    </>}
+  </div></div>;
 };
 
 export default ReadinessScore;

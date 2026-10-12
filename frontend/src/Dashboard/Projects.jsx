@@ -1,24 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "../api";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "Employee Management System",
-      description:
-        "A web application to manage employees, assign tasks, and track task progress.",
-      technologies: ["React", "JavaScript", "Tailwind CSS"],
-      github: "https://github.com/",
-    },
-    {
-      id: 2,
-      name: "College Management System",
-      description:
-        "A college management system for managing students, faculty, grades, and academic information.",
-      technologies: ["PHP", "MySQL", "HTML", "CSS"],
-      github: "https://github.com/",
-    },
-  ]);
+  const [projects, setProjects] = useState([]);
+  const [error, setError] = useState("");
+  useEffect(() => { apiRequest("/api/projects").then(setProjects).catch((e) => setError(e.message)); }, []);
 
   const [showForm, setShowForm] = useState(false);
 
@@ -36,18 +22,14 @@ const Projects = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newProject = {
-      id: Date.now(),
-      name: formData.name,
-      description: formData.description,
-      technologies: formData.technologies.split(",").map((tech) => tech.trim()),
-      github: formData.github,
-    };
-
-    setProjects([...projects, newProject]);
+    try {
+      setError("");
+      const created = await apiRequest("/api/projects", { method: "POST", body: { ...formData, technologies: formData.technologies.split(",").map((tech) => tech.trim()).filter(Boolean) } });
+      setProjects((items) => [...items, created]);
+    } catch (requestError) { setError(requestError.message); return; }
 
     setFormData({
       name: "",
@@ -59,8 +41,9 @@ const Projects = () => {
     setShowForm(false);
   };
 
-  const deleteProject = (id) => {
-    setProjects(projects.filter((project) => project.id !== id));
+  const deleteProject = async (id) => {
+    try { await apiRequest(`/api/projects/${id}`, { method: "DELETE" }); setProjects((items) => items.filter((project) => project._id !== id)); }
+    catch (requestError) { setError(requestError.message); }
   };
 
   return (
@@ -87,6 +70,8 @@ const Projects = () => {
             + Add Project
           </button>
         </div>
+
+        {error && <p role="alert" className="mb-5 text-sm text-red-300">{error}</p>}
 
         {/* Add Project Form */}
         {showForm && (
@@ -209,7 +194,7 @@ const Projects = () => {
           <div className="grid md:grid-cols-2 gap-5">
             {projects.map((project) => (
               <div
-                key={project.id}
+                key={project._id}
                 className="p-6 rounded-2xl border border-[#1E2A45] bg-[#0F1526] hover:-translate-y-1 hover:border-indigo-500/30 transition-all duration-300"
               >
                 {/* Project Header */}
@@ -223,7 +208,7 @@ const Projects = () => {
                   </div>
 
                   <button
-                    onClick={() => deleteProject(project.id)}
+                    onClick={() => deleteProject(project._id)}
                     className="text-xs text-[#64748B] hover:text-red-400 transition"
                   >
                     Delete

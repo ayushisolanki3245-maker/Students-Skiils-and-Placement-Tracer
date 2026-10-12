@@ -1,20 +1,27 @@
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { authRequest } from "../api";
 
 const Login = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
-    if (email && password) {
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await authRequest("login", { email, password });
       navigate("/dashboard");
-    } else {
-      alert("Please enter email and password");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -42,6 +49,8 @@ const Login = () => {
 
           <form onSubmit={handleLogin}>
 
+            {error && <p role="alert" className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</p>}
+
             {/* Email */}
             <div className="mb-5">
 
@@ -51,6 +60,7 @@ const Login = () => {
 
               <input
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
@@ -69,6 +79,7 @@ const Login = () => {
 
               <input
                 type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
@@ -81,6 +92,7 @@ const Login = () => {
             {/* Sign In */}
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5"
               style={{
                 background:
@@ -89,7 +101,7 @@ const Login = () => {
                   "0 4px 20px rgba(99,102,241,0.25)",
               }}
             >
-              Sign In
+              {isSubmitting ? "Signing in…" : "Sign In"}
             </button>
 
           </form>

@@ -1,27 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "../api";
 
 const Certifications = () => {
-  const [certifications, setCertifications] = useState([
-    {
-      id: 1,
-      name: "React.js Certification",
-      issuer: "Meta",
-      date: "2026",
-      credential: "https://example.com",
-    },
-    {
-      id: 2,
-      name: "Java Programming",
-      issuer: "Oracle",
-      date: "2025",
-      credential: "https://example.com",
-    },
-  ]);
+  const [certifications, setCertifications] = useState([]);
+  const [error, setError] = useState("");
+  useEffect(() => { apiRequest("/api/certifications").then(setCertifications).catch((e) => setError(e.message)); }, []);
 
   const [form, setForm] = useState({
     name: "",
     issuer: "",
-    date: "",
+    year: "",
     credential: "",
   });
 
@@ -32,30 +20,29 @@ const Certifications = () => {
     });
   };
 
-  const addCertification = (e) => {
+  const addCertification = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.issuer || !form.date) {
+    if (!form.name || !form.issuer || !form.year) {
       return;
     }
-
-    const newCertification = {
-      id: Date.now(),
-      ...form,
-    };
-
-    setCertifications([...certifications, newCertification]);
+    try {
+      setError("");
+      const created = await apiRequest("/api/certifications", { method: "POST", body: { ...form, year: Number(form.year) } });
+      setCertifications((items) => [...items, created]);
+    } catch (requestError) { setError(requestError.message); return; }
 
     setForm({
       name: "",
       issuer: "",
-      date: "",
+      year: "",
       credential: "",
     });
   };
 
-  const deleteCertification = (id) => {
-    setCertifications(certifications.filter((cert) => cert.id !== id));
+  const deleteCertification = async (id) => {
+    try { await apiRequest(`/api/certifications/${id}`, { method: "DELETE" }); setCertifications((items) => items.filter((cert) => cert._id !== id)); }
+    catch (requestError) { setError(requestError.message); }
   };
 
   return (
@@ -75,6 +62,8 @@ const Certifications = () => {
           </p>
         </div>
 
+        {error && <p role="alert" className="mb-5 text-sm text-red-300">{error}</p>}
+
         {/* STATS */}
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
@@ -86,7 +75,7 @@ const Certifications = () => {
 
           <StatCard
             title="This Year"
-            value={certifications.filter((cert) => cert.date === "2026").length}
+            value={certifications.filter((cert) => String(cert.year) === String(new Date().getFullYear())).length}
             color="#10B981"
           />
 
@@ -145,9 +134,9 @@ const Certifications = () => {
 
                 <input
                   type="number"
-                  name="date"
+                  name="year"
                   placeholder="2026"
-                  value={form.date}
+                  value={form.year}
                   onChange={handleChange}
                   className="w-full mt-2 px-4 py-3 rounded-lg bg-[#151D35] border border-[#1E2A45] outline-none text-sm focus:border-[#A78BFA]"
                 />
@@ -210,7 +199,7 @@ const Certifications = () => {
           <div className="grid md:grid-cols-2 gap-4">
             {certifications.map((cert) => (
               <div
-                key={cert.id}
+                key={cert._id}
                 className="p-5 rounded-xl bg-[#151D35] border border-[#1E2A45] hover:border-[#A78BFA]/40 transition"
               >
                 <div className="flex items-start gap-4">
@@ -229,7 +218,7 @@ const Certifications = () => {
 
                     <div className="flex items-center gap-3 mt-3">
                       <span className="text-[10px] px-2 py-1 rounded-full bg-[#1E2A45] text-[#94A3B8]">
-                        {cert.date}
+                        {cert.year}
                       </span>
 
                       {cert.credential && (
@@ -250,7 +239,7 @@ const Certifications = () => {
 
                 <div className="mt-4 pt-3 border-t border-[#1E2A45] flex justify-end">
                   <button
-                    onClick={() => deleteCertification(cert.id)}
+                    onClick={() => deleteCertification(cert._id)}
                     className="text-xs text-[#64748B] hover:text-[#F87171] transition"
                   >
                     Delete

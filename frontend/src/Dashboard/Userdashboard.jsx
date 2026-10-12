@@ -1,7 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { apiRequest } from "../api";
 
 const UserDashboard = () => {
+  const [data, setData] = useState({ profile: null, dsa: [], placements: [], readiness: null });
+  const [error, setError] = useState("");
+  useEffect(() => {
+    Promise.allSettled([apiRequest("/api/profile"), apiRequest("/api/dsa"), apiRequest("/api/placements"), apiRequest("/api/readiness")]).then((results) => {
+      const [profile, dsa, placements, readiness] = results;
+      setData({ profile: profile.status === "fulfilled" ? profile.value : null, dsa: dsa.status === "fulfilled" ? dsa.value : [], placements: placements.status === "fulfilled" ? placements.value : [], readiness: readiness.status === "fulfilled" ? readiness.value : null });
+      const failed = results.find((result) => result.status === "rejected");
+      if (failed) setError(failed.reason.message);
+    });
+  }, []);
+  const solved = data.dsa.reduce((sum, topic) => sum + (topic.easy || 0) + (topic.medium || 0) + (topic.hard || 0), 0);
+  const readiness = data.readiness;
+  const progress = readiness?.categoryProgress || {};
   return (
     <div className="min-h-screen bg-[#080C18] text-white">
       <div className="p-6 md:p-8 max-w-7xl mx-auto">
@@ -12,40 +26,41 @@ const UserDashboard = () => {
             Overview
           </p>
 
-          <h1 className="text-3xl font-bold mt-2">Welcome back, Ayushi 👋</h1>
+            <h1 className="text-3xl font-bold mt-2">Welcome back{data.profile?.username ? `, ${data.profile.username}` : ""} 👋</h1>
 
           <p className="text-[#64748B] mt-2">
             Here's how your placement preparation is going.
           </p>
         </div>
+        {error && <p role="alert" className="mb-5 text-sm text-amber-300">Some dashboard data could not load: {error}</p>}
 
         {/* ================= STAT CARDS ================= */}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="CGPA"
-            value="8.4"
+            value={data.profile?.profile?.cgpa ?? "—"}
             subtitle="Current"
             color="#6366F1"
           />
 
           <StatCard
             title="DSA Problems"
-            value="167"
+            value={solved}
             subtitle="Problems solved"
             color="#10B981"
           />
 
           <StatCard
             title="Applications"
-            value="9"
+            value={data.placements.length}
             subtitle="Active applications"
             color="#F59E0B"
           />
 
           <StatCard
             title="Readiness"
-            value="72"
+            value={readiness?.score ?? "—"}
             subtitle="Out of 100"
             color="#A78BFA"
           />
@@ -75,40 +90,15 @@ const UserDashboard = () => {
             </div>
 
             <div className="space-y-5">
-              <Progress
-                title="Academics"
-                value="24 / 30"
-                width="80%"
-                color="#6366F1"
-              />
+              <Progress title="DSA" value={`${progress.dsa ?? 0}%`} width={`${progress.dsa ?? 0}%`} color="#10B981" />
 
-              <Progress
-                title="DSA Depth"
-                value="18 / 25"
-                width="72%"
-                color="#10B981"
-              />
+              <Progress title="MERN" value={`${progress.mern ?? 0}%`} width={`${progress.mern ?? 0}%`} color="#6366F1" />
 
-              <Progress
-                title="Projects"
-                value="14 / 20"
-                width="70%"
-                color="#F59E0B"
-              />
+              <Progress title="Fundamentals" value={`${progress.fundamentals ?? 0}%`} width={`${progress.fundamentals ?? 0}%`} color="#F59E0B" />
 
-              <Progress
-                title="Core Skills"
-                value="10 / 15"
-                width="67%"
-                color="#F87171"
-              />
+              <Progress title="Communication" value={`${progress.communication ?? 0}%`} width={`${progress.communication ?? 0}%`} color="#F87171" />
 
-              <Progress
-                title="Certifications"
-                value="6 / 10"
-                width="60%"
-                color="#A78BFA"
-              />
+              <Progress title="Readiness score" value={`${readiness?.score ?? 0} / 100`} width={`${readiness?.score ?? 0}%`} color="#A78BFA" />
             </div>
           </div>
 
@@ -132,13 +122,13 @@ const UserDashboard = () => {
               />
 
               <div className="text-center">
-                <div className="text-4xl font-bold">72</div>
+                  <div className="text-4xl font-bold">{readiness?.score ?? "—"}</div>
 
                 <div className="text-xs text-[#64748B]">/ 100</div>
               </div>
             </div>
 
-            <span className="text-sm text-[#10B981]">Good progress</span>
+            <span className="text-sm text-[#10B981]">{readiness?.label || "Add data to get started"}</span>
           </div>
         </div>
 
@@ -156,28 +146,7 @@ const UserDashboard = () => {
               </Link>
             </div>
 
-            <div className="space-y-3">
-              <Application
-                company="Google"
-                role="SWE Intern"
-                status="Shortlisted"
-                statusColor="#F59E0B"
-              />
-
-              <Application
-                company="Infosys"
-                role="Systems Engineer"
-                status="Applied"
-                statusColor="#6366F1"
-              />
-
-              <Application
-                company="Wipro"
-                role="Project Engineer"
-                status="Applied"
-                statusColor="#6366F1"
-              />
-            </div>
+            <div className="space-y-3">{data.placements.slice(0, 3).map((placement) => <Application key={placement._id} company={placement.company} role={placement.role} status={placement.status} statusColor={placement.status === "Placed" ? "#10B981" : placement.status === "Rejected" ? "#F87171" : "#F59E0B"} />)}{data.placements.length === 0 && <p className="text-sm text-[#64748B]">No placement drives yet.</p>}</div>
           </div>
 
           {/* QUICK ACTIONS */}

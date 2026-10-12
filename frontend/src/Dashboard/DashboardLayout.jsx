@@ -1,11 +1,16 @@
-import React from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, Navigate, Outlet, useNavigate } from "react-router-dom";
+import { apiRequest } from "../api";
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  useEffect(() => { if (localStorage.getItem("token")) apiRequest("/api/profile").then(setUser).catch(() => {}); }, []);
+
+  if (!localStorage.getItem("token")) return <Navigate to="/login" replace />;
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -32,13 +37,13 @@ const DashboardLayout = () => {
           {/* Profile */}
           <Link to="/profile" className="hidden sm:flex items-center gap-3">
             <div className="text-right">
-              <p className="text-sm font-medium">Ayushi Solanki</p>
+              <p className="text-sm font-medium">{user?.username || "Your profile"}</p>
 
-              <p className="text-xs text-[#64748B]">BCA · Semester 4</p>
+              <p className="text-xs text-[#64748B]">{user?.profile?.course ? `${user.profile.course}${user.profile.semester ? ` · Semester ${user.profile.semester}` : ""}` : "Student"}</p>
             </div>
 
             <div className="w-9 h-9 rounded-full bg-[#6366F1] flex items-center justify-center font-semibold">
-              A
+              {(user?.username?.[0] || "S").toUpperCase()}
             </div>
           </Link>
 
@@ -77,7 +82,7 @@ const DashboardLayout = () => {
               icon="◉"
               text="Readiness Score"
             />
-            <SidebarLink to="/ai-insights" icon="🤖" text="AI Insights" />
+            <SidebarLink to="/ai-insights" icon="⌕" text="Job Matches" />
           </nav>
         </aside>
 
